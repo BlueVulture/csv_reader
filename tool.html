@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <style>
+            table {
+                border-collapse: collapse;
+                border: 2px black solid;
+                font: 12px sans-serif;
+            }
+
+            td {
+                border: 1px black solid;
+                padding: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <input type="file" id="file">
+        <script src="https://d3js.org/d3.v6.min.js"></script>
+
+        <script type="text/javascript"charset="utf-8">
+            file = null;
+            content = null;
+            const reader = new FileReader();
+
+            reader.addEventListener('load', (e) => {
+                content = e.target.result;
+                showTable();
+            });
+
+            document.getElementById("file").onchange = function(e){
+                file = this.files[0];
+                
+                reader.readAsText(file);
+
+            }
+
+            function refresh() {
+                var tables = document.getElementsByTagName("table");
+                console.log(tables);
+                var array = Array.from(tables);
+                array.forEach(element => {
+                    element.remove();
+                });
+            }
+
+            function showTable() { 
+                array = d3.csvParseRows(content);
+                console.log(array);
+
+                refresh();
+                
+                // var container = 
+                d3.select("body")
+                    .append("table")
+
+                    .selectAll("tr")
+                        .data(array).enter()
+                        .append("tr")
+
+                    .selectAll("td")
+                        .data(function(d) { return d; }).enter()
+                        .append("td")
+                        .text(function(d) { return d; });           
+                    
+                // console.log(container);
+            }
+           
+     
+        </script>
+    </body>
+</html>
