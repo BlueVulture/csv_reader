@@ -9,7 +9,7 @@
                 font: 12px sans-serif;
             }
 
-            td {
+            td, th {
                 border: 1px black solid;
                 padding: 5px;
             }
@@ -26,7 +26,11 @@
 
             reader.addEventListener('load', (e) => {
                 content = e.target.result;
-                showTable();
+                var array = getArray();
+                var header = array[0];
+                array = array.slice(1);
+                clear();
+                showTable(array, header);
             });
 
             document.getElementById("file").onchange = function(e){
@@ -36,38 +40,123 @@
 
             }
 
-            function refresh() {
-                var tables = document.getElementsByTagName("table");
-                console.log(tables);
-                var array = Array.from(tables);
+            function clear() {
+                var table = document.getElementsByTagName("table");
+                console.log(table);
+                var array = Array.from(table);
                 array.forEach(element => {
                     element.remove();
                 });
             }
 
-            function showTable() { 
-                array = d3.csvParseRows(content);
+            function refresh() {
+                var rows = document.getElementsByTagName("tr");
+                var array = Array.from(rows).splice(1);
+                console.log(array);
+                array.forEach(element => {
+                    element.remove();
+                });
+            }
+
+            function getArray(){
+                var a = d3.csvParseRows(content);
+                return a;
+            }
+
+            function showTable(a, h) { 
+                var array = a
                 console.log(array);
 
-                refresh();
+                var header = h;
+                console.log(header);  
                 
-                // var container = 
-                d3.select("body")
+                var headerCheck = document.getElementById("header");
+
+                refresh();
+                console.log(headerCheck);
+                if(headerCheck == null){
+                    d3.select("body")
                     .append("table")
 
                     .selectAll("tr")
-                        .data(array).enter()
+                        .data([header]).enter()
                         .append("tr")
+                        .attr("id", "header")
+                        
+                    .selectAll("th")
+                        .data(header).enter()
+                        .append("th") 
+                        .append("a")
+                            .attr("href", "#")
+                            .attr("sort", "asc")
+                        .text(function(d) { return d; });    
+                }
+        
+                d3.select("body")
+                .select("table")
 
-                    .selectAll("td")
-                        .data(function(d) { return d; }).enter()
-                        .append("td")
-                        .text(function(d) { return d; });           
+                .selectAll("tr")
+                    .data(array).enter()
+                    .append("tr")
+
+                .selectAll("td")
+                    .data(function(d) { return d; }).enter()
+                    .append("td")
+                    .text(function(d) { return d; });      
+                       
+                if(headerCheck == null) {
+                    attachEventListeners();
+                }
+            }
+
+            function attachEventListeners() {
+                var elements = document.getElementsByTagName('a');
+                
+                for(var i = 0, len = elements.length; i < len; i++) {
+                    elements[i].addEventListener("click", sortBy);
+                }
+            }
+
+            function sortBy(event) {
+                array = getArray();
+                header = array[0];
+                array = array.slice(1);
+                index = 0;
+                var asc = true;
+
+                for (let i = 0; i < header.length; i++) {
+                    if(event.target.innerHTML === header[i]){
+                        index = i;
+                        break;
+                    }
+                }
+
+                if(event.target.getAttribute("sort") === "asc"){
+                    asc = true;
+                    event.target.setAttribute("sort", "desc");
+                } else {
+                    asc = false;
+                    event.target.setAttribute("sort", "asc");
+                }
+
+                array.sort(function(a, b){
+                    if (a[index] === b[index]) {
+                        return 0;
+                    }
+                    else {
+                        if(asc){
+                            return (a[index] < b[index]) ? -1 : 1;
+                        } else {
+                            return (a[index] > b[index]) ? -1 : 1;
+                        }
+                            
                     
-                // console.log(container);
+                    }
+                });
+
+                showTable(array, header);
             }
            
-     
         </script>
     </body>
 </html>
